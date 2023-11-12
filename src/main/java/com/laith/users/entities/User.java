@@ -1,6 +1,9 @@
 package com.laith.users.entities;
 
 import java.util.List;
+
+import org.hibernate.annotations.NaturalId;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,6 +29,9 @@ public class User {
 	
 	@Column(unique=true)
 	private String username;
+	
+	@NaturalId(mutable = true)
+	private String email;
 	private String password;
 	private Boolean enabled;
 	
