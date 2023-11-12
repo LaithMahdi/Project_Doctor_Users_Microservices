@@ -33,6 +33,7 @@ public class User {
 	@NaturalId(mutable = true)
 	private String email;
 	private String password;
+	private int verificationCode;
 	private Boolean enabled;
 	
 	@ManyToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)

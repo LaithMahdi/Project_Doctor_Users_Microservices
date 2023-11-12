@@ -59,6 +59,7 @@ public class SecurityConfig {
 	 .authorizeHttpRequests()
      .requestMatchers("/login").permitAll()
      .requestMatchers("/register").permitAll()
+     .requestMatchers("/checkcode").permitAll()
      .requestMatchers("/all").hasAnyAuthority("ADMIN")
 	
 	 .anyRequest().authenticated().and()

@@ -20,6 +20,7 @@ public class UsersMicroserviceApplication {
 	}
 	@Autowired
 	UserService userService;
+
 	/*
 	@PostConstruct
 	void init_users() {
