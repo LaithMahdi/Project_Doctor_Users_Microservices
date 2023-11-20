@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -51,16 +52,9 @@ public class UserServiceImpl implements UserService {
 	public User addRoleToUser(String username, String rolename) {
 		User usr = userRep.findByUsername(username);
 		Role r = roleRep.findByRole(rolename);
-		System.out.println(r);
-		if (usr.getRoles() == null) {
-			usr.setRoles(new ArrayList<>());
-		}
-		if (!usr.getRoles().contains(r)) {
-			usr.getRoles().add(r);
-		}
+		usr.getRoles().add(r);
 		return usr;
 	}
-
 	@Override
 	public List<User> findAllUsers() {
 		return userRep.findAll();
@@ -72,7 +66,7 @@ public class UserServiceImpl implements UserService {
 		if (userRep.findByEmail(user.getEmail()) != null) {
 			throw new RuntimeException("Email already registered");
 		}
-		user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+		//user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 		user.setEnabled(false);
 		// set role
 		List<Role> roles = new ArrayList<>();
@@ -91,17 +85,16 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private int generateRandomVerificationCode() {
-		return new Random().nextInt((99999 - 10000) + 1) + 10000;
+		return new Random().nextInt((999999 - 100000) + 1) + 100000;
 	}
-
-	private void sendMail(User user) {
+	@Async
+	private void sendMail(User user){
 		SimpleMailMessage msg = new SimpleMailMessage();
 		msg.setTo(user.getEmail());
 		msg.setText("Hello " + user.getUsername() + "\nInsert your verification code : \n" + user.getVerificationCode()
 				+ "\nto activate your account.");
 		msg.setSubject("Verification code");
 		mailSender.send(msg);
-		;
 		System.out.println(user.getEmail());
 	}
 

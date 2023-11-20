@@ -1,6 +1,8 @@
 package com.laith.users.restControllers;
 
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,9 +23,6 @@ public class UserRestController {
 	UserService userService;
 	
 	
-	
-	
-	
 	@RequestMapping(path = "all", method = RequestMethod.GET)
 	public List<User> getAllUsers() {
 		return userService.findAllUsers();
@@ -37,17 +36,16 @@ public class UserRestController {
 	
 	
 	@PostMapping("/checkcode")
-    public String verifyUser(@RequestBody User request ) {
-		String email = request.getEmail();
+    public  Boolean verifyUser(@RequestBody User request ) {
 		int verificationCode= request.getVerificationCode();
-        System.out.println("user activated: " + verificationCode);
+		String email = request.getEmail();
+	
         User user =userService.verifyCode(email, verificationCode);
         if (user!=null)
-            return " account has been verified ";
+            return true;
         else
-           return "account has not been verified";
+           return false;
     }
-
 }
 
 
