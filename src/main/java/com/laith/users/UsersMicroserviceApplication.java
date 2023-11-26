@@ -4,15 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.laith.users.entities.Role;
-import com.laith.users.entities.User;
+
 import com.laith.users.service.UserService;
 
 import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication
+@EnableAsync
 public class UsersMicroserviceApplication {
 
 	public static void main(String[] args) {

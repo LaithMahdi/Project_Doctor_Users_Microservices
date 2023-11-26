@@ -1,5 +1,6 @@
 package com.laith.users.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.laith.users.entities.Role;
+import com.laith.users.entities.Token;
 import com.laith.users.entities.User;
 import com.laith.users.repos.RoleRepository;
 import com.laith.users.repos.UserRepository;
@@ -55,6 +57,7 @@ public class UserServiceImpl implements UserService {
 		usr.getRoles().add(r);
 		return usr;
 	}
+
 	@Override
 	public List<User> findAllUsers() {
 		return userRep.findAll();
@@ -66,16 +69,18 @@ public class UserServiceImpl implements UserService {
 		if (userRep.findByEmail(user.getEmail()) != null) {
 			throw new RuntimeException("Email already registered");
 		}
-		//user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 		user.setEnabled(false);
+		user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 		// set role
 		List<Role> roles = new ArrayList<>();
 		roles.add(roleRep.findRoleById(2L));
 		user.setRoles(roles);
-		// generate verification code
-		int verificationCode = generateRandomVerificationCode();
-		user.setVerificationCode(verificationCode);
+
+		// create a token
+		createVerificationToken(user, generateRandomVerificationCode());
+
 		sendMail(user);
+
 		return userRep.save(user);
 	}
 
@@ -87,11 +92,11 @@ public class UserServiceImpl implements UserService {
 	private int generateRandomVerificationCode() {
 		return new Random().nextInt((999999 - 100000) + 1) + 100000;
 	}
-	@Async
-	private void sendMail(User user){
+
+	private void sendMail(User user) {
 		SimpleMailMessage msg = new SimpleMailMessage();
 		msg.setTo(user.getEmail());
-		msg.setText("Hello " + user.getUsername() + "\nInsert your verification code : \n" + user.getVerificationCode()
+		msg.setText("Hello " + user.getUsername() + "\nInsert your verification code : \n" + user.getToken().getCode()
 				+ "\nto activate your account.");
 		msg.setSubject("Verification code");
 		mailSender.send(msg);
@@ -99,17 +104,33 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User verifyCode(String email, int verificationCode) {
-		User user = findByEmail(email);
+	public User verifyCode(String email, int code) {
+	    User user = findByEmail(email);
 
-		if (user != null && user.getVerificationCode() == verificationCode) {
-			user.setEnabled(true);
-			saveUser(user);
-			return user;
+	    if (user != null && user.getToken() != null) {
+	        Token token = user.getToken();
+	        if (token.getCode() == code && !token.isExpired()) {
+	            user.setEnabled(true);
+	        } else {
+	            throw new RuntimeException("Incorrect or expired verification code");
+	        }
+	    } else {
+	        throw new RuntimeException("Invalid verification code");
+	    }
 
-		} else {
-			return null;
-		}
+	    return userRep.save(user);
+	}
+
+
+	private Token createVerificationToken(User user, int code) {
+		Token token = new Token();
+		token.setUser(user);
+		token.setCode(code);
+		token.setCreatedAt(LocalDateTime.now());
+		token.setExpiredAt(LocalDateTime.now().plusMinutes(1));
+
+		user.setToken(token);
+		return token;
 	}
 
 }

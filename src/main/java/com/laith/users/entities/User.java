@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -30,14 +31,17 @@ public class User {
 	@Column(unique=true)
 	private String username;
 	
-	@NaturalId(mutable = true)
+	@Column(unique=true)
 	private String email;
 	private String password;
-	private int verificationCode;
+	
 	private Boolean enabled;
 	
 	@ManyToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
 	
 	@JoinTable(name="user_role",joinColumns = @JoinColumn(name="user_id") ,inverseJoinColumns = @JoinColumn(name="role_id"))
 	private List<Role> roles;
+	
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Token token;
 }
